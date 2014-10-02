@@ -28,11 +28,14 @@ module.exports = function (grunt) {
         processedOptions.openTag = options.openTag || '<!-- start auto template tags -->';
         processedOptions.closeTag = options.closeTag || '<!-- start auto template tags -->';
 
+        // Path processing
+        processedOptions.pathProcessing  = options.pathProcessing || null;
+
         /**
          * @kludge should not have to hack around for templates
          */
-        processedOptions.scriptTemplate = processedOptions.scriptTemplate.replace('{{', '<%=').replace('}}', '%>')
-        processedOptions.linkTemplate = processedOptions.linkTemplate.replace('{{', '<%=').replace('}}', '%>')
+        processedOptions.scriptTemplate = processedOptions.scriptTemplate.replace('{{', '<%=').replace('}}', '%>');
+        processedOptions.linkTemplate = processedOptions.linkTemplate.replace('{{', '<%=').replace('}}', '%>');
 
         return processedOptions;
     };
@@ -53,6 +56,12 @@ module.exports = function (grunt) {
         srcFiles.forEach(function (srcFile) {
             // calculate the src files path relative to destination path
             var relativePath = path.relative(filePath, srcFile);
+
+            // Convert supplied pathProcessing string into a regular expression
+            if (that.options.pathProcessing) {
+                relativePath = relativePath.replace(that.options.pathProcessing[0], that.options.pathProcessing[1]);
+            }
+
             tagsText += that.generateTag(relativePath);
         });
 
@@ -81,6 +90,7 @@ module.exports = function (grunt) {
      */
     Tags.prototype.generateTag = function (relativePath) {
         var ext = path.extname(relativePath);
+
         var data = {
             data: {
                 path: relativePath
